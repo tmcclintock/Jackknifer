@@ -1,0 +1,1 @@
+The goal of this set of routines is be able to take in a halo catalog, and output path, and a number of jackknife regions to create and then generate the regions. This assumes a cube distribution of halos. The routine will on its own calculate the extent of the catalog based on the halos within it.
