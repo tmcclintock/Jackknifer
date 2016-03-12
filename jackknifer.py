@@ -32,6 +32,8 @@ class Jackknifer(object):
         xmin=ymin=zmin = 1e99 # a big number
         xmax=ymax=zmax = -1e99 # a small number
         for line in infile:
+            if line[0]=='#':
+                continue
             parts = line.split()
             x,y,z = float(parts[xc]),float(parts[yc]),float(parts[zc])
             if x < xmin:
@@ -47,8 +49,10 @@ class Jackknifer(object):
             if z > zmax:
                 zmax = z
         infile.close()
-        self.minimums = [xmin,ymin,zmin]
-        self.maximums = [xmax,ymax,zmax]
+        xoff,yoff,zoff=(xmax-xmin)*0.00001,\
+            (ymax-ymin)*0.00001,(zmax-zmin)*0.00001
+        self.minimums = [xmin-xoff,ymin-yoff,zmin-zoff]
+        self.maximums = [xmax+xoff,ymax+yoff,zmax+zoff]
     
     """
     A method to set the number of jackknife regions to a new value.
@@ -73,7 +77,7 @@ class Jackknifer(object):
         jkpath = self.path+"/jackknife_files/"
         os.system("mkdir "+jkpath)
         filename = self.filename
-        infile = open(filename,"r")
+        infile = open(self.path+"/"+filename,"r")
 
         #Create the files for each jackknife region
         filelist = []
@@ -83,11 +87,14 @@ class Jackknifer(object):
         
         #Loop over the lines in the input file and put them
         #in the correct jackknife file
+        i = 0
         for line in infile:
+            if line[0]=='#':
+                continue
             parts = line.split()
             x,y,z = float(parts[xc]),float(parts[yc]),float(parts[zc])
             xi,yi,zi = int(x/xstep),int(y/ystep),int(z/zstep)
-            index = xi*N**2 + yi*N + zi
+            index = zi*N*N + yi*N + xi
             filelist[index].write(line)
         
         #Close the output files
@@ -102,3 +109,6 @@ if __name__ == '__main__':
     jkr.measure()
     print jkr.minimums, jkr.maximums
     jkr.jackknife()
+
+    #myjkr = Jackknifer(path="/media/tom/Data/Emulator_data/reduced_data",filename="reduced_box000_Z9.list",columns=[8,9,10],N=8)
+    #myjkr.jackknife()
